@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>item manager</title>
+    <link rel="stylesheet" href="https://bootswatch.com/4/simplex/bootstrap.min.css">
+</head>
+<body>
+    
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+                <a class="navbar-brand" href="#">Item manager</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+              
+                <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+                  <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                      <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                  </ul>
+                </div>
+              </nav>
+              <br>
+              <div class="container">
+                 <h1>Add Item</h1>
+                 <form id="itemForm">
+                     <div class="form-group">
+                         <label>Text</label>
+                         <input type="text" id="text" class="form-control">
+                     </div>
+                     <div class="form-group">
+                            <label>Body</label>
+                            <textarea id="body" class="form-control"></textarea>
+                    </div>
+                    <input type="submit" value="insert" class="btn btn-primary">
+                 </form> 
+                 <hr><br>
+                <ul id="items" class="list-group">
+
+                </ul>
+              </div>
+
+
+              <script
+              src="https://code.jquery.com/jquery-2.2.4.js"
+              integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+              crossorigin="anonymous"></script>
+    
+    <script>
+        $(document).ready(function(){
+            getItems();
+
+            $('#itemForm').on('submit', function(e){
+                e.preventDefault();
+                let text = $('#text').val();
+                let body = $('#body').val();
+
+                addItem(text, body);
+            });
+
+            $('body').on('click', '.deleteLink', function(e){
+                e.preventDefault();
+                let id = $(this).data("id");
+                //console.log(id);
+                
+               deleteItem(id);
+            });
+            function deleteItem(id){
+                $.ajax({
+                    method: 'POST', 
+                    url:'http://127.0.0.1:8000/api/items/'+id,
+                    data: {_method: 'DELETE'}
+                }).done(function(item){
+                    alert('Item Removed');
+                    location.reload();
+                });
+            }
+            function addItem(text, body){
+                 $.ajax({
+                    method: 'POST', 
+                    url:'http://127.0.0.1:8000/api/items',
+                    data: {text: text, body:body}
+                }).done(function(item){
+                    alert('Item #'+ item.id + ' Added');
+                    location.reload();
+                });
+            }
+
+            function getItems(){
+                $.ajax({
+                    url:'http://127.0.0.1:8000/api/items'
+                }).done(function(items){
+                    let output = '';
+                    $.each(items, function(key, item){
+                        output += `
+                            <li class="list-group-item">
+                                <strong> ${item.text}: </strong> ${item.body} <a href="#" class="deleteLink" data-id="${item.id}">Delete ${item.id}</a>
+                            </li>
+                        `;
+                    })
+                    $('#items').append(output);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
